@@ -12,6 +12,7 @@
 namespace Symfony\Bundle\DoctrineMigrationsBundle\Command;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\DoctrineBundle\Command\DoctrineCommand as BaseCommand;
 use Doctrine\DBAL\Migrations\Configuration\Configuration;
@@ -35,5 +36,12 @@ abstract class DoctrineCommand extends BaseCommand
         $configuration->registerMigrationsFromDirectory($dir);
         $configuration->setName($container->getParameter('doctrine_migrations.name'));
         $configuration->setMigrationsTableName($container->getParameter('doctrine_migrations.table_name'));
+            
+        foreach ($configuration->getMigrations() as $version) {
+            $migration = $version->getMigration();
+            if ($migration instanceof ContainerAwareInterface) {
+                $migration->setContainer($container);
+            }
+        }
     }
 }
